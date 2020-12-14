@@ -25,9 +25,22 @@ We will hash the user's password using `bcryptjs`, and use JSON Web Tokens and t
 Be prepared to demonstrate your understanding of this week's concepts by answering questions on the following topics.
 
 1. Differences between using _sessions_ or _JSON Web Tokens_ for authentication.
+
+When using sessions, the server saves the state for the session and the session can be created or destroyed by the server, JSON Web Tokens allow for stateless operation of the server, but the tokens cannot be destroyed by the server.
+
+
 2. What does `bcryptjs` do to help us store passwords in a secure manner?
+
+'bcryptjs' runs the password through a hashing algorithm which destroys the original data and stores a salted hash code to the database instead.
+
 3. How are unit tests different from integration and end-to-end testing?
+
+unit tests test the unit independently from the rest of the application whereas integration and end to end testing test how everything in the application works together.
+
 4. How does _Test Driven Development_ change the way we write applications and tests?
+
+
+Test Driven Development changes the way we write applications and tests because we write the tests with the functionality of the application in mind, then it forces us to code the application to make the test pass.
 
 You are expected to be able to answer questions in these areas.
 
