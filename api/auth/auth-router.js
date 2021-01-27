@@ -1,7 +1,26 @@
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const Users = require('./auth-model.js');
+const secrets = require('./JWTsecrets.js');
+
 const router = require('express').Router();
 
-router.post('/register', (req, res) => {
-  res.end('implement register, please!');
+router.post('/register', async (req, res) => {
+  const credentials = req.body;
+  if(!credentials.username || !credentials.password) {
+    res.status(400).json({message: 'username and password required'});
+  } else {
+    try {
+      const hash = bcrypt.hashSync(credentials.password, 12);
+      credentials.password = hash;
+      const user = await Users.add(credentials);
+      const token = generateToken(user);
+      res.status(201).json({data: user, token: token});
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({message: 'username taken'});
+    }
+  }
   /*
     IMPLEMENT
     You are welcome to build additional middlewares to help with the endpoint's functionality.
@@ -28,8 +47,23 @@ router.post('/register', (req, res) => {
   */
 });
 
-router.post('/login', (req, res) => {
-  res.end('implement login, please!');
+router.post('/login', async (req, res) => {
+  const {username, password} = req.body;
+
+  try {
+    const [user] = await Users.findBy({username});
+    if(user && bcrypt.compareSync(password, user.password)) {
+      const token = generateToken(user);
+      res.status(200).json({message: `Welcome, ${username}!`, token: token});
+    } else if(!username || !password){
+      res.status(400).json({message: 'username and password required'});
+    } else {
+      res.status(404).json({message: 'invalid credentials'})
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({message: 'invalid credentials'})
+  }
   /*
     IMPLEMENT
     You are welcome to build additional middlewares to help with the endpoint's functionality.
@@ -54,5 +88,18 @@ router.post('/login', (req, res) => {
       the response body should include a string exactly as follows: "invalid credentials".
   */
 });
+
+function generateToken(user) {
+  const payload = {
+    subject: user.id,
+    username: user.username,
+    password: user.password
+  }
+  const options = {
+    expiresIn: '2m'
+  }
+  const token = jwt.sign(payload, secrets.jwtSecret, options);
+  return token;
+}
 
 module.exports = router;
